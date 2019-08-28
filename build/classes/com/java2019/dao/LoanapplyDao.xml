@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <!-- namespace的名字只要保证是唯一值即可 -->
+<!--   mapper代理开发规范 
+1.mapper接口的名称必须与对应的mapper.xml映射文件的名称一致
+2.mapper.xml文件的namespace与mapper接口的类路径一致（即接口文件和映射文件放在同一个包中
+3.mapper接口中的方法名与mapper.xml中定义的执行语句的id相同
+4.mapper接口中方法的输入参数类型与parameterType类型相同
+5.输出类型与resultType的类型相同
+-->
+<mapper namespace="com.java2019.dao.LoanapplyDao">
+<select id="findPersonalAndConloaner" parameterType="String" resultType="Loanapply" >
+select pname,pidcard,paddress,phighschool,pphone,pcollege,pmajor,
+pyear,pendyear,cname,cidcard,cphone,caddress from  personal,conloaner	
+where personal.pidcard=#{user_idcard} and conloaner.user_idcard=#{user_idcard}			
+</select>
+<insert id="insertLoanapply" parameterType="Loanapply">
+insert into loanapply(pname,pidcard,paddress,phighschool,pphone,pcollege,pmajor,pyear,pendyear,cname,
+cidcard,cphone,caddress, relative,amount,ayear,aterm,areason) values(#{pname},#{pidcard},#{phighschool},
+#{paddress},#{pphone},#{pcollege},#{pmajor},#{pyear},#{pendyear},#{cname},#{cidcard},#{cphone},#{caddress},
+#{relative},#{amount},#{ayear},#{aterm},#{areason})
+</insert>
+<select id="findPersonalByPidcardAndAyear" parameterType="String" resultType="Loanapply">
+select * from loanapply where pidcard=#{pidcard} and ayear=#{ayear}
+</select>
+<select id="findAll" parameterType="String" resultType="Loanapply">
+select ayear,aterm,amount,cname,cphone,astate from loanapply where pidcard=#{pidcard}
+</select>
+</mapper>

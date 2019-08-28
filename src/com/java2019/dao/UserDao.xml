@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <!-- namespace的名字只要保证是唯一值即可 -->
+<!--   mapper代理开发规范 
+1.mapper接口的名称必须与对应的mapper.xml映射文件的名称一致
+2.mapper.xml文件的namespace与mapper接口的类路径一致（即接口文件和映射文件放在同一个包中
+3.mapper接口中的方法名与mapper.xml中定义的执行语句的id相同
+4.mapper接口中方法的输入参数类型与parameterType类型相同
+5.输出类型与resultType的类型相同
+-->
+<mapper namespace="com.java2019.dao.UserDao">
+<select id="findUser" parameterType="String" resultType="user">
+select * from user where user_name=#{username} and user_password=#{password}
+</select>
+<insert id="registerUser" parameterType="user">
+insert into user(user_name,user_idcard,user_email,user_password) 
+values(#{user_name},#{user_idcard},#{user_email},#{user_password})
+</insert>
+<update id="updateUserState" parameterType="String">
+update user set user_state=#{user_state} where user_idcard=#{user_idcard}
+</update>
+<update id="updatePersonal">
+update user 
+<set><!-- 去掉多余的逗号 -->
+			<if test="user_name !=null and user_name != '' ">
+			user_name=#{user_name},
+		</if>
+		<if test="user_email !=null and user_email != '' ">
+			user_email=#{user_email},
+		</if>
+		<if test="user_password !=null and user_password != '' ">
+			user_password=#{user_password},
+		</if>
+		</set>  
+where  user_idcard=#{user_idcard}
+</update>
+<!-- 查询用户名是否存在 -->
+<select id="findUserName" parameterType="String" resultType="user">
+select * from user where user_name=#{user_name}
+</select>
+<select id="findtUserIdCardList" resultType="user">
+select user_idcard from user where user_state='学生'
+</select>
+<!-- 查询身份证号是否已经被注册 -->
+<select id="findUserIdCard" parameterType="String" resultType="user">
+select * from user where user_idcard=#{user_idcard}
+</select>
+</mapper>

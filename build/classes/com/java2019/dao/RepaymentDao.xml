@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <!-- namespace的名字只要保证是唯一值即可 -->
+<!--   mapper代理开发规范 
+1.mapper接口的名称必须与对应的mapper.xml映射文件的名称一致
+2.mapper.xml文件的namespace与mapper接口的类路径一致（即接口文件和映射文件放在同一个包中
+3.mapper接口中的方法名与mapper.xml中定义的执行语句的id相同
+4.mapper接口中方法的输入参数类型与parameterType类型相同
+5.输出类型与resultType的类型相同
+-->
+<mapper namespace="com.java2019.dao.RepaymentDao">
+<select id="findRepaymentInformation" parameterType="String" resultType="repayment">
+select  conumber,contract.ayear,coaccount, contract.amount,gaineddate,coendyear,cointerestrate from loanapply,contract
+where loanapply.pidcard=#{pidcard} and contract.pidcard=#{pidcard} and contract.id=loanapply.id
+</select>
+<!-- 添加还款申请 -->
+<insert id="addRepayment" parameterType="repayment">
+insert into repayment(ayear,conumber,coaccount,amount,total,ramount,rapplydate) 
+values(#{ayear},#{conumber},#{coaccount},#{amount},#{total},#{ramount},#{rapplydate}) 
+</insert>
+<!-- 查询所有申请还款的信息返回银行页面 -->
+<select id="findAllRepaymentInformation" parameterType="pageBean" resultType="repayment">
+select p.*,pname,pidcard from repayment p,contract q where p.coaccount=q.coaccount and p.ayear=q.ayear 		
+		<if test="pidcard !=null and pidcard != '' ">
+			and pidcard like concat('%',#{pidcard},'%')
+		</if>
+		<if test=" ayear !=null and  ayear != '' ">
+			and  p.ayear like concat('%',#{ayear},'%')
+		</if>
+		<if test=" rapplydate !=null and  rapplydate != '' ">
+			and  rapplydate like concat('%',#{rapplydate},'%')
+		</if>		
+		order by id asc
+		<!-- 执行分页查询 -->
+		<if test="start !=null and rows != null">
+			limit #{start},#{rows}
+		</if>
+</select>
+<select id="findRepaymentInformationCount" resultType="Integer">
+select count(*) from repayment
+</select>
+<!-- 根据id查询某一个合同已经还款的金额 -->
+<select id="findRamountSum" parameterType="repayment" resultType="String">
+select sum(ramount) from repayment where conumber=#{conumber} and ractualdate  is not null
+</select>
+<update id="updateRactualdate" parameterType="repayment">
+update repayment set ractualdate=#{ractualdate},nowarrears=#{nowarrears} where id=#{id}
+</update>
+<select id="findPersonalRepaymentRecordCount" parameterType="pageBean" resultType="Integer">
+select count(*) from repayment where conumber in (select conumber from contract where pidcard=#{pidcard})
+</select>
+<!-- 根据身份证号嵌套查询还款记录 -->
+<select id="findRepaymentRecord" parameterType="pageBean" resultType="repayment">
+	select* from repayment
+	<where>
+		<if test="pidcard !=null and pidcard != ''">
+			conumber in (select conumber from contract where pidcard=#{pidcard})
+		</if>
+		<if test="conumber !=null and conumber != '' ">
+			and conumber like concat('%',#{conumber},'%')
+		</if>
+		<if test="ayear !=null and ayear != '' ">
+			and ayear like concat('%',#{ayear},'%')
+		</if>
+		<!-- 执行分页查询 -->
+		<if test="start !=null and rows != null">
+			limit #{start},#{rows}
+		</if>
+	</where>
+</select>
+<select id="findMinNowarrearsByYearAndPidcard" parameterType="String" resultType="repayment">
+select * from repayment where id in
+(select max(id) from repayment where ayear=#{ayear} and conumber=#{conumber} and ractualdate is not  null)
+</select>
+<select id="findAllOverdueInformation" parameterType="pageBean" resultType="overdue">
+select loanapply.astate,contract.conumber,contract.pname,contract.pidcard,contract.pphone,
+contract.cname,contract.cphone, contract.ayear,contract.coaccount,contract.amount,
+contract.coendyear from loanapply,contract where  loanapply.id=contract.id
+<if test="coendyear !=null and coendyear!='' ">
+and coendyear like concat('%',#{coendyear},'%')
+</if>
+</select>
+</mapper>
